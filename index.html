@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>飞书剧集中心 - 专家版</title>
     <style>
         :root { --primary: #ff2c55; --bg: #0f1014; --card-bg: #1c1d24; --text: #ffffff; --text-gray: #8a8b91; --success: #00b42a; --warning: #ffb800; }
@@ -13,20 +13,20 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* 主页面 */
-        .home-container { padding: 40px; max-width: 1400px; margin: 0 auto; }
+        .home-container { padding: 40px; max-width: 1400px; margin: 0 auto; transition: 0.3s; }
         .input-bar { background: var(--card-bg); padding: 20px; border-radius: 12px; display: flex; gap: 15px; margin-bottom: 30px; }
-        input { flex: 1; background: #2c2d36; border: 1px solid #3d3e4a; padding: 12px; border-radius: 8px; color: #fff; outline: none; }
+        input { flex: 1; background: #2c2d36; border: 1px solid #3d3e4a; padding: 12px; border-radius: 8px; color: #fff; outline: none; font-size: 16px; } /* 16px防止iOS点击缩放 */
         
         button { border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; padding: 10px 20px; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-main { background: var(--primary); }
-        .btn-pause { background: #444; }
+        .btn-main { background: var(--primary); white-space: nowrap; }
+        .btn-pause { background: #444; white-space: nowrap; }
         .btn-main:disabled { background: #333; cursor: not-allowed; }
 
         /* 宫格卡片 */
         .grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
         .ep-card { background: var(--card-bg); border-radius: 10px; overflow: hidden; cursor: pointer; position: relative; border: 2px solid transparent; transition: 0.3s; }
         .ep-card.is-active { border-color: var(--primary); box-shadow: 0 0 15px rgba(255, 44, 85, 0.3); }
-        .ep-card video { width: 100%; aspect-ratio: 9/16; object-fit: cover; background: #000; }
+        .ep-card video { width: 100%; aspect-ratio: 9/16; object-fit: cover; background: #000; pointer-events: none; }
         .ep-card-info { padding: 12px; font-size: 14px; display: flex; justify-content: space-between; }
         
         /* 状态标签 */
@@ -42,11 +42,10 @@
         #playerPage { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 1000; }
         .player-wrapper { display: flex; height: 100%; width: 100%; }
         .video-side { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
-        #mainVideo { max-height: 100%; width: auto; max-width: 100%; outline: none; }
+        #mainVideo { max-height: 100%; width: auto; max-width: 100%; outline: none; background: #000; }
         
         /* 悬浮下载按钮 */
-        .floating-dl-btn { position: absolute; bottom: 30px; right: 30px; background: rgba(255, 44, 85, 0.6); backdrop-filter: blur(10px); padding: 12px 24px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); transition: 0.3s; }
-        .floating-dl-btn:hover { background: rgba(255, 44, 85, 1); transform: scale(1.05); }
+        .floating-dl-btn { position: absolute; bottom: 30px; right: 30px; background: rgba(255, 44, 85, 0.8); backdrop-filter: blur(10px); padding: 12px 24px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); transition: 0.3s; z-index: 10; }
 
         /* 右侧栏 */
         .info-side { width: 360px; background: var(--bg); border-left: 1px solid #2c2d36; padding: 20px; overflow-y: auto; }
@@ -59,7 +58,26 @@
         .ep-item .bg-fill { position: absolute; bottom: 0; left: 0; width: 0%; height: 100%; background: rgba(0, 180, 42, 0.2); pointer-events: none; }
         .ep-item .status-dot { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; }
 
-        .close-btn { position: absolute; top: 20px; left: 20px; z-index: 1001; cursor: pointer; background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .close-btn { position: absolute; top: 20px; left: 20px; z-index: 1001; cursor: pointer; background: rgba(0,0,0,0.5); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2); }
+
+        /* ======= 手机端适配媒体查询 ======= */
+        @media (max-width: 768px) {
+            .home-container { padding: 15px; }
+            .input-bar { flex-direction: column; padding: 15px; gap: 10px; }
+            .grid-layout { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            
+            #playerPage { overflow-y: auto; }
+            .player-wrapper { flex-direction: column; height: auto; }
+            
+            .video-side { height: 65vh; width: 100%; flex: none; }
+            #mainVideo { height: 100%; width: 100%; object-fit: contain; }
+            
+            .info-side { width: 100%; border-left: none; border-top: 1px solid #2c2d36; padding: 20px; box-sizing: border-box; }
+            .floating-dl-btn { bottom: 20px; right: 20px; padding: 8px 16px; font-size: 14px; }
+            .ep-grid { grid-template-columns: repeat(5, 1fr); } /* 手机端每行5个也合适 */
+            
+            .close-btn { top: 10px; left: 10px; width: 35px; height: 35px; }
+        }
     </style>
 </head>
 <body>
@@ -77,22 +95,23 @@
     <div class="close-btn" onclick="closePlayer()">✕</div>
     <div class="player-wrapper">
         <div class="video-side">
-            <video id="mainVideo" controls></video>
+            <video id="mainVideo" controls playsinline></video>
             <button class="floating-dl-btn" id="dlCurrentBtn" onclick="dlCurrent()">
                 📥 下载本集
             </button>
         </div>
         <div class="info-side">
-            <h2 id="movieTitle">魔玩AI - TK短剧</h2>
+            <h2 id="movieTitle" style="margin-top:0">魔玩AI - TK短剧</h2>
             <div style="font-size:12px; color:var(--text-gray); margin-bottom:20px;">
                 9.8k Likes · 115k Shares · EP <span id="currentEpNum">1</span>
             </div>
             
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-weight: bold;">剧集列表</span>
-                <button style="background:none; color:var(--primary); font-size:12px; padding:0" id="allDlBtn" onclick="dlAll()">下载全部</button>
+                <button style="background:none; color:var(--primary); font-size:12px; padding:0" id="allDlBtn" onclick="dlAll()">下载全部 (仅限电脑)</button>
             </div>
             <div id="epGrid" class="ep-grid"></div>
+            <div style="height: 50px;"></div> <!-- 手机端底部留空 -->
         </div>
     </div>
 </div>
@@ -103,9 +122,11 @@
     let currentIdx = -1;
     let globalDirHandle = null;
     let isPaused = false;
-    let downloadStatus = new Map(); // index -> { progress, status: 'waiting'|'loading'|'done'|'error' }
+    let downloadStatus = new Map(); 
 
-    // --- 加载列表 ---
+    // 判断是否是移动端
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
     async function handleFetch() {
         const input = document.getElementById('webhookInput');
         const btn = document.getElementById('fetchBtn');
@@ -129,7 +150,9 @@
 
             renderHomeGrid();
             renderEpGrid();
-        } catch(e) { alert('提取失败'); }
+            // 手机端隐藏“下载全部”按钮，因为手机浏览器不支持选文件夹
+            if(isMobile) document.getElementById('allDlBtn').style.display = 'none';
+        } catch(e) { alert('提取失败，请检查链接或网络'); }
         finally {
             btn.disabled = false;
             btn.innerText = "提取剧集";
@@ -141,7 +164,7 @@
         grid.innerHTML = episodes.map((ep, i) => `
             <div class="ep-card" id="h-card-${i}" onclick="openPlayer(${i})">
                 <div id="h-badge-${i}"></div>
-                <video preload="metadata"></video>
+                <video preload="metadata" src="${ep.url}#t=0.1"></video>
                 <div class="ep-card-info">
                     <b>${ep.name}</b>
                     <span id="h-txt-${i}" style="color:var(--success); font-size:11px;"></span>
@@ -164,7 +187,6 @@
         syncUI();
     }
 
-    // --- 播放器切换 ---
     function openPlayer(i) {
         currentIdx = i;
         const ep = episodes[i];
@@ -174,19 +196,18 @@
         
         const v = document.getElementById('mainVideo');
         v.src = ep.url;
-        v.play();
+        v.play().catch(()=>{}); // 自动播放可能被拦截
         
         renderEpGrid();
+        window.scrollTo(0,0);
     }
 
     function closePlayer() {
         document.getElementById('mainVideo').pause();
         document.getElementById('playerPage').style.display = 'none';
         document.getElementById('homePage').style.display = 'block';
-        renderHomeGrid();
     }
 
-    // --- 下载核心逻辑 ---
     function togglePause() {
         isPaused = !isPaused;
         const btn = document.getElementById('pauseBtn');
@@ -195,13 +216,12 @@
     }
 
     async function dlAll() {
-        if(!window.showDirectoryPicker) return alert('请使用 Chrome');
+        if(!window.showDirectoryPicker) return alert('当前浏览器不支持批量存入文件夹，请使用 PC 端 Chrome。');
         globalDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' }).catch(() => null);
         if(!globalDirHandle) return;
 
         document.getElementById('pauseBtn').style.display = 'flex';
         
-        // 标记所有未下载的为“排队中”
         episodes.forEach((_, i) => {
             if(!downloadStatus.has(i) || downloadStatus.get(i).status === 'error') {
                 downloadStatus.set(i, { progress: 0, status: 'waiting' });
@@ -219,11 +239,23 @@
                 await startDownload(i);
             }
         };
-        worker(); worker(); // 2路并行
+        worker(); worker(); 
     }
 
-    function dlCurrent() {
-        startDownload(currentIdx);
+    async function dlCurrent() {
+        // 如果是移动端，或者没开启文件夹授权，走普通下载模式
+        if(isMobile || !globalDirHandle) {
+            const ep = episodes[currentIdx];
+            const a = document.createElement('a');
+            a.href = ep.url;
+            a.download = `${ep.name}.mp4`;
+            a.target = "_blank"; // 移动端通常会新开标签页播放，长按即可保存
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } else {
+            startDownload(currentIdx);
+        }
     }
 
     async function startDownload(i) {
@@ -244,13 +276,12 @@
             }
 
             while(true) {
-                if(isPaused && globalDirHandle) { /* 如果是全部下载模式下的暂停，fetch会继续直到块完成 */ }
                 const {done, value} = await reader.read();
                 if(done) break;
                 if(writer) await writer.write(value);
                 loaded += value.length;
                 downloadStatus.set(i, { progress: (loaded / total * 100).toFixed(0), status: 'loading' });
-                if(i === currentIdx || document.getElementById('homePage').style.display !== 'none') syncUI();
+                syncUI();
             }
 
             if(writer) await writer.close();
@@ -261,56 +292,33 @@
         syncUI();
     }
 
-    // --- 界面同步 (全场同步) ---
     function syncUI() {
         const dlBtn = document.getElementById('dlCurrentBtn');
-        
         downloadStatus.forEach((data, i) => {
             const p = data.progress + '%';
-            
-            // 1. 主页同步
             const hBar = document.getElementById(`h-bar-${i}`);
             const hTxt = document.getElementById(`h-txt-${i}`);
             const hBadge = document.getElementById(`h-badge-${i}`);
             if(hBar) {
                 hBar.style.width = p;
-                if(data.status === 'loading') {
-                    hBadge.className = 'badge badge-dl'; hBadge.innerText = '下载中';
-                    hTxt.innerText = p;
-                } else if(data.status === 'waiting') {
-                    hBadge.className = 'badge badge-wait'; hBadge.innerText = '排队中';
-                    hTxt.innerText = '';
-                } else if(data.status === 'done') {
-                    hBadge.className = 'badge badge-done'; hBadge.innerText = '已完成';
-                    hTxt.innerText = '✓';
-                }
+                if(data.status === 'loading') { hBadge.className = 'badge badge-dl'; hBadge.innerText = '下载中'; hTxt.innerText = p; }
+                else if(data.status === 'waiting') { hBadge.className = 'badge badge-wait'; hBadge.innerText = '排队中'; hTxt.innerText = ''; }
+                else if(data.status === 'done') { hBadge.className = 'badge badge-done'; hBadge.innerText = '已完成'; hTxt.innerText = '✓'; }
             }
-
-            // 2. 选集区同步
             const gFill = document.getElementById(`g-fill-${i}`);
             const gDot = document.getElementById(`g-dot-${i}`);
             if(gFill) {
                 gFill.style.width = p;
                 gDot.style.background = data.status === 'done' ? 'var(--success)' : (data.status === 'loading' ? 'var(--primary)' : (data.status === 'waiting' ? 'var(--warning)' : 'transparent'));
             }
-
-            // 3. 播放页大按钮状态 (针对当前集)
             if(i === currentIdx && dlBtn) {
-                if(data.status === 'done') {
-                    dlBtn.innerHTML = `✅ 已下载 (再次下载?)`;
-                    dlBtn.style.background = "rgba(0, 180, 42, 0.6)";
-                } else if(data.status === 'loading') {
-                    dlBtn.innerHTML = `<span class="spinner"></span> 正在保存 ${p}`;
-                    dlBtn.style.background = "var(--primary)";
-                } else {
-                    dlBtn.innerHTML = `📥 下载本集`;
-                    dlBtn.style.background = "rgba(255, 44, 85, 0.6)";
-                }
+                if(data.status === 'done') { dlBtn.innerHTML = `✅ 已下载`; dlBtn.style.background = "var(--success)"; }
+                else if(data.status === 'loading') { dlBtn.innerHTML = `<span class="spinner"></span> 保存中 ${p}`; }
+                else { dlBtn.innerHTML = `📥 下载本集`; dlBtn.style.background = "var(--primary)"; }
             }
         });
     }
 
-    // 快捷键
     window.addEventListener('keydown', (e) => {
         const v = document.getElementById('mainVideo');
         if (document.getElementById('playerPage').style.display === 'block') {
